@@ -1,15 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// Orientation determines whether rows or columns are contiguous in memory
-typedef enum {LB_ROW_ORIENTED, LB_COL_ORIENTED} MatrixOrientation;
-
-typedef struct {
-	Scalar* data;
-	unsigned int num_rows;
-	unsigned int num_cols;
-	MatrixOrientation orientation;
-} Matrix;
 
 // Result = Scalar * Vector
 void lbstv(Scalar s, Vector v, Vector result) {
@@ -62,6 +53,3 @@ void lbmm(Matrix A, Matrix B, Matrix result) {
 	}
 	result.orientation = LB_ROW_ORIENTED;
 }
-
-int main(int argc, char** argv) {
-	
