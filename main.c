@@ -1,26 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-typedef float Scalar;
-
-// Assume Vector to be n rows by 1 column
-typedef struct {
-	Scalar* data;
-	unsigned int length;
-} Vector;
-
-Vector lb_create_vector(Scalar* data, unsigned int length) {
-	Vector v;
-	v.data = data;
-	v.length = length;
-	return v;
-}
-
-Vector lb_allocate_vector(unsigned int length) {
-	void* ptr = malloc(sizeof(Scalar) * length);
-	return lb_create_vector((Scalar*) ptr, length);
-}
-
 // Orientation determines whether rows or columns are contiguous in memory
 typedef enum {LB_ROW_ORIENTED, LB_COL_ORIENTED} MatrixOrientation;
 
