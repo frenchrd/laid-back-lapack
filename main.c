@@ -8,13 +8,6 @@ void lbstv(Scalar s, Vector v, Vector result) {
 	for(i = 0; i < v.length; i++) result.data[i] = s * v.data[i];
 }
 
-// Result = Vector dot Vector
-void lbdp(Vector a, Vector b, Scalar* result) {
-	&result = 0.0;
-	int i;
-	for(i = 0; i < a.length; i++) &result += a.data[i] * b.data[i];
-}
-
 #define lb_get_row(A,j) lb_create_vector(A.data + j * A.num_cols)
 #define lb_vec_element_ptr(v,j) v.data + j;
 // Assume Matrix A is LB_ROW_ORIENTED

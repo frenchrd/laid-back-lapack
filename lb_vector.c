@@ -12,3 +12,10 @@ Vector lb_allocate_vector(unsigned int length) {
 	return lb_create_vector((Scalar*) ptr, length);
 }
 
+// Result = Vector dot Vector
+void lbdp(Vector a, Vector b, Scalar* result) {
+	&result = 0.0;
+	int i;
+	for(i = 0; i < a.length; i++) &result += a.data[i] * b.data[i];
+}
+
