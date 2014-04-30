@@ -7,28 +7,3 @@ void lbstv(Scalar s, Vector v, Vector result) {
 	int i;
 	for(i = 0; i < v.length; i++) result.data[i] = s * v.data[i];
 }
-
-#define lb_get_row(A,j) lb_create_vector(A.data + j * A.num_cols)
-#define lb_vec_element_ptr(v,j) v.data + j;
-// Assume Matrix A is LB_ROW_ORIENTED
-void lbmv_row(Matrix A, Vector b, Vector result) {
-	int j;
-	for(j = 0; j < A.num_rows; j++) {
-		Vector A_j = lb_get_row(A,j);
-		Scalar* result_element = lb_vec_element_ptr(result,j);
-		lbdp(A_j, b, result_element);
-	}
-}
-
-#define lb_get_col(A,i) lb_create_vector(A.data + i * A.num_rows);
-// Assume Matrix A is LB_COL_ORIENTED
-void lbmv_col(Matrix A, Vector b, Vector result) {
-	int i;
-	for(i = 0; i < A.num_cols; i++) {
-		Vector A_i = lb_get_col(A,i);
-		Scalar* result_element = lb_vec_element_ptr(result,i);
-		lbdp(b, A_i, result_element);
-	}
-}
-
-
