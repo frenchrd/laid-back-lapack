@@ -19,3 +19,8 @@ void lbdp(Vector a, Vector b, Scalar* result) {
 	for(i = 0; i < a.length; i++) &result += a.data[i] * b.data[i];
 }
 
+// Result = Scalar * Vector
+void lbstv(Scalar s, Vector v, Vector result) {
+	int i;
+	for(i = 0; i < v.length; i++) result.data[i] = s * v.data[i];
+}

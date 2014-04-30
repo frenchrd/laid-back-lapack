@@ -9,5 +9,6 @@
 	Vector lb_create_vector(Scalar* data, unsigned int length);
 	Vector lb_allocate_vector(unsigned int length);
 	void lbdp(Vector a, Vector b, Scalar* result);
+	void lbstv(Scalar s, Vector v, Vector result);
 	#define LB_VECTOR_INCLUDED
 #endif
