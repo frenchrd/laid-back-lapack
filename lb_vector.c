@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "lb_vector.h"
 
 Vector lb_create_vector(Scalar* data, unsigned int length) {
