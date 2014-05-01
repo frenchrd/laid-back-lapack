@@ -17,7 +17,10 @@ Vector lb_allocate_vector(unsigned int length) {
 void lbdp(Vector a, Vector b, Scalar* result) {
 	*result = 0.0;
 	int i;
-	for(i = 0; i < a.length; i++) *result += a.data[i] * b.data[i];
+	Scalar inner_result;
+	#pragma omp parallel for private(i) reduction(+:inner_result)
+	for(i = 0; i < a.length; i++) inner_result += a.data[i] * b.data[i];
+	*result = inner_result;
 }
 
 // Result = Scalar * Vector

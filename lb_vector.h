@@ -10,11 +10,5 @@
 	Vector lb_allocate_vector(unsigned int length);
 	void lbdp(Vector a, Vector b, Scalar* result);
 	void lbstv(Scalar s, Vector v, Vector result);
-	#define lbv_iterate(vec, iter, expr) do{\
-		unsigned int iter;\
-		for(iter=0; iter < vec.length; iter++) {\
-			expr;\
-		}\
-	} while(0);
 	#define LB_VECTOR_INCLUDED
 #endif
