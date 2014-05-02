@@ -23,6 +23,13 @@ void lbdp(Vector a, Vector b, Scalar* result) {
 	*result = inner_result;
 }
 
+// Result = Vector + Vector
+void lbvpv(Vector a, Vector b, Vector result) {
+	int i;
+	#pragma omp parallel for private(i)
+	for(i=0; i < a.length; i++) result.data[i] = a.data[i] + b.data[i];
+}
+
 // Result = Scalar * Vector
 void lbstv(Scalar s, Vector v, Vector result) {
 	int i;
