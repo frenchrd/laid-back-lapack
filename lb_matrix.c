@@ -7,7 +7,7 @@ void lbmm(Matrix A, Matrix B, Matrix result) {
 		Vector A_j = lb_get_row(A,j);
 		for(i = 0; i < A.num_rows; i++) {
 			Vector B_i = lb_get_col(B,i);
-			Scalar* result_element = lb_mat_element_ptr(result,i,j);
+			double* result_element = lb_mat_element_ptr(result,i,j);
 			lbdp(A_j, B_i, result_element);
 		}
 	}
@@ -18,7 +18,7 @@ void lbmv_row(Matrix A, Vector b, Vector result) {
 	int j;
 	for(j = 0; j < A.num_rows; j++) {
 		Vector A_j = lb_get_row(A,j);
-		Scalar* result_element = lb_vec_element_ptr(result,j);
+		double* result_element = lb_vec_element_ptr(result,j);
 		lbdp(A_j, b, result_element);
 	}
 }
@@ -27,7 +27,7 @@ void lbmv_col(Matrix A, Vector b, Vector result) {
 	int i;
 	for(i = 0; i < A.num_cols; i++) {
 		Vector A_i = lb_get_col(A,i);
-		Scalar* result_element = lb_vec_element_ptr(result,i);
+		double* result_element = lb_vec_element_ptr(result,i);
 		lbdp(b, A_i, result_element);
 	}
 }

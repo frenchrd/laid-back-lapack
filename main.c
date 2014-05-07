@@ -7,11 +7,11 @@
 #define Initialize_Walltimer() double time0 = MPI_Wtime(); double time1;
 #define Walltimer_Label(msg) time1 = MPI_Wtime(); printf("## [Rank %d] " msg " (%fs)\n",rank_id,time1 - time0); time0 = time1;
 
-Scalar f1_function(Scalar x) {
+double f1_function(double x) {
 	return sin(x);
 }
 
-Scalar f2_function(Scalar x) {
+double f2_function(double x) {
 	return cos(x);
 }
 
@@ -25,9 +25,9 @@ int main(int argc, char** argv) {
 	unsigned int length = 1024l * 1024l * atoi(argv[1]);
 	unsigned int global_length = length * num_ranks;
 
-	Scalar local_dot_product;
+	double local_dot_product;
 	int i;
-	Scalar h = (Scalar)(2.0 * M_PI / (Scalar)global_length);
+	double h = (double)(2.0 * M_PI / (double)global_length);
 	Vector f1 = lb_allocate_vector(length);
 	Vector f2 = lb_allocate_vector(length);
 	Vector f1_dot_f2 = lb_allocate_vector(length);
@@ -50,19 +50,19 @@ int main(int argc, char** argv) {
 	lbdp(f1,f2,&local_dot_product);
 	Walltimer_Label("Dot Product");
 
-	Scalar dot_product_son;
+	double dot_product_son;
 
-	MPI_Datatype typeOfScalar;
+	MPI_Datatype typeOfdouble;
 	#ifdef LB_SCALAR_DOUBLE
-		typeOfScalar = MPI_DOUBLE;
+		typeOfdouble = MPI_DOUBLE;
 	#else
-		typeOfScalar = MPI_FLOAT;
+		typeOfdouble = MPI_FLOAT;
 	#endif
 
-	MPI_Reduce(&local_dot_product,&dot_product_son,1,typeOfScalar,MPI_SUM,0,MPI_COMM_WORLD);
+	MPI_Reduce(&local_dot_product,&dot_product_son,1,typeOfdouble,MPI_SUM,0,MPI_COMM_WORLD);
 	Walltimer_Label("Reduction");
 
-	Scalar angle = asin(dot_product_son);
+	double angle = asin(dot_product_son);
 	if (rank_id == 0) {
 		printf("The dot product of f1 and f2 is %f\n",dot_product_son);
 		printf("The angle between f1 and f2 is %f\n",angle);
