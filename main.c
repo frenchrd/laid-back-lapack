@@ -5,59 +5,68 @@
 #include "mpi.h"
 
 #define Initialize_Walltimer() double time0 = MPI_Wtime(); double time1;
-#define Increment_Walltimer() time1 = MPI_Wtime(); printf("\t%f seconds\n", time1 - time0); time0 = time1;
-#define Walltimer_Label(msg) printf("## " msg "\n");
+#define Walltimer_Label(msg) time1 = MPI_Wtime(); printf("## [Rank %d] " msg " (%fs)\n",rank_id,time1 - time0); time0 = time1;
+
+Scalar f1_function(Scalar x) {
+	return sin(x);
+}
+
+Scalar f2_function(Scalar x) {
+	return cos(x);
+}
 
 int main(int argc, char** argv) {
 	MPI_Init(&argc, &argv);
+	int rank_id, num_ranks;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank_id);
+	MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
 	Initialize_Walltimer();
 	unsigned int length = 1024l * 1024l * atoi(argv[1]);
+	unsigned int global_length = length * num_ranks;
 
-	Walltimer_Label("Allocating giant arrays");
-	Scalar h = (Scalar)(2.0 * 3.1415 / (Scalar)length);
-	Scalar one;
-	Scalar two = 2.0;
+	Scalar local_dot_product;
 	int i;
-	Vector sin_squared = lb_allocate_vector(length);
-	Vector cos_squared = lb_allocate_vector(length);
-	Vector sin2pluscos2 = lb_allocate_vector(length);
-	Increment_Walltimer();
+	Scalar h = (Scalar)(2.0 * M_PI / (Scalar)global_length);
+	Vector f1 = lb_allocate_vector(length);
+	Vector f2 = lb_allocate_vector(length);
+	Vector f1_dot_f2 = lb_allocate_vector(length);
+	Walltimer_Label("Allocating giant arrays");
 
-	Walltimer_Label("Create sin_squared");
+	int lower_bound = rank_id * length;
+
 	#pragma omp parallel for private(i)
-	for(i = 0; i < sin_squared.length; i++) {
-		sin_squared.data[i] = (Scalar)pow(sin(h * i),2);
+	for(i = 0; i < f1.length; i++) {
+		f1.data[i] = f1_function(h * (i+lower_bound));
 	}
-	Increment_Walltimer();
+	Walltimer_Label("Create f1");
 
-	Walltimer_Label("Create cos_squared");
 	#pragma omp parallel for private(i)
-	for(i = 0; i < cos_squared.length; i++) {
-		cos_squared.data[i] = (Scalar)pow(cos(h * i),2);
+	for(i = 0; i < f2.length; i++) {
+		f2.data[i] = f2_function(h * (i+lower_bound));
 	}
-	Increment_Walltimer();
+	Walltimer_Label("Create f2");
 
+	lbdp(f1,f2,&local_dot_product);
 	Walltimer_Label("Dot Product");
-	lbdp(sin_squared,cos_squared,&one);
-	Increment_Walltimer();
 
-	Walltimer_Label("Vector Addition");
-	lbvpv(sin_squared, cos_squared, sin2pluscos2);
-	Increment_Walltimer();
+	Scalar dot_product_son;
 
-	Walltimer_Label("Scalar Multiplication");
-	lbstv(two, sin2pluscos2, sin2pluscos2);
-	Increment_Walltimer();
+	MPI_Datatype typeOfScalar;
+	#ifdef LB_SCALAR_DOUBLE
+		typeOfScalar = MPI_DOUBLE;
+	#else
+		typeOfScalar = MPI_FLOAT;
+	#endif
 
-	Walltimer_Label("Average Vector Components");
-	Scalar vector_sum = 0.0;
-	#pragma omp parallel for private(i) reduction(+:vector_sum)
-	for(i = 0; i < length; i++) vector_sum += sin2pluscos2.data[i];
-	Scalar average = vector_sum / h;
-	Increment_Walltimer();
+	MPI_Reduce(&local_dot_product,&dot_product_son,1,typeOfScalar,MPI_SUM,0,MPI_COMM_WORLD);
+	Walltimer_Label("Reduction");
 
-	printf("Sin^2 \\dot Cos^2 = %f\n",one);
+	Scalar angle = asin(dot_product_son);
+	if (rank_id == 0) {
+		printf("The dot product of f1 and f2 is %f\n",dot_product_son);
+		printf("The angle between f1 and f2 is %f\n",angle);
+	}	
 	MPI_Finalize();
 	return 0;
 }
