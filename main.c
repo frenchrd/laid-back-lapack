@@ -3,6 +3,7 @@
 #include "math.h"
 #include "lb_vector.h"
 #include "mpi.h"
+#include "populate_vectors.h"
 
 #define Initialize_Walltimer() double time0 = MPI_Wtime(); double time1;
 #define Walltimer_Label(rank_id,msg) time1 = MPI_Wtime(); printf("## [Rank %d] " msg " (%fs)\n",rank_id,time1 - time0); time0 = time1;
@@ -58,33 +59,25 @@ ProblemDescription specify_p_from_environment(int argc, char** argv) {
 	return p;
 }
 
+
 int main(int argc, char** argv) {
 	MPI_Init(&argc, &argv);
 
 	ProblemDescription p = specify_p_from_environment(argc,argv);
 	Initialize_Walltimer();
 
-	
-
+	// Allocate host arrays
 	double local_dot_product;
 	int i;
 	double h = (double)(2.0 * M_PI / (double)p.global_length);
 	Vector f1 = lb_allocate_vector(p.local_length);
 	Vector f2 = lb_allocate_vector(p.local_length);
 	Vector f1_dot_f2 = lb_allocate_vector(p.local_length);
-	Walltimer_Label(p.my_rank_id, "Allocating giant arrays");
+	Walltimer_Label(p.my_rank_id, "Allocating giant arrays on host");
 
-	#pragma omp parallel for private(i)
-	for(i = 0; i < f1.length; i++) {
-		f1.data[i] = f1_function(h * (i+p.lower_bound));
-	}
-	Walltimer_Label(p.my_rank_id, "Create f1");
-
-	#pragma omp parallel for private(i)
-	for(i = 0; i < f2.length; i++) {
-		f2.data[i] = f2_function(h * (i+p.lower_bound));
-	}
-	Walltimer_Label(p.my_rank_id, "Create f2");
+	// Allocate and initialize vectors on device
+	populate_vectors(f1.data,f2.data,p.local_length,h,p.lower_bound);
+	Walltimer_Label(p.my_rank_id, "Populating vectors via device");
 
 	// f1 dot f2
 	double dot_product_son;
