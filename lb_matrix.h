@@ -4,6 +4,8 @@
 		unsigned int num_rows;
 		unsigned int num_cols;
 	} Matrix;
+	Matrix lb_create_matrix(double* data, unsigned int num_rows, unsigned int num_cols);
+	Matrix lb_allocate_matrix(unsigned int num_rows, unsigned int num_cols);
 	
 	#define lb_mat_element_ptr(A,i,j) (A.data + j * A.num_cols + i)
 	#define lb_mat_element(A,i,j) A.data[j * A.num_cols + i]

@@ -28,3 +28,16 @@ void lbma(Matrix A, Matrix B, Matrix result) {
 		}
 	}
 }
+
+Matrix lb_create_matrix(double* data, unsigned int num_rows, unsigned int num_cols) {
+	Matrix m;
+	m.data = data;
+	m.num_rows = num_rows;
+	m.num_cols = num_cols;
+	return m;
+}
+
+Matrix lb_allocate_matrix(unsigned int num_rows, unsigned int num_cols) {
+	double* ptr = (double*)malloc(sizeof(double) * num_rows * num_cols);
+	return lb_create_matrix(ptr,num_rows,num_cols);
+}
