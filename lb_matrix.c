@@ -1,33 +1,30 @@
 #include "lb_matrix.h"
-// Assume Matrix A is LB_ROW_ORIENTED
-// Assume Matrix B is LB_COL_ORIENTED
+// Assume A.num_cols == B.num_rows
+// Assume A.num_rows == B.num_cols
 void lbmm(Matrix A, Matrix B, Matrix result) {
-	int i,j;
-	for(int j = 0; j < A.num_cols; j++) {
-		Vector A_j = lb_get_row(A,j);
-		for(i = 0; i < A.num_rows; i++) {
-			Vector B_i = lb_get_col(B,i);
-			double* result_element = lb_mat_element_ptr(result,i,j);
-			lbdp(A_j, B_i, result_element);
+	int col,row,offset,vec_length;
+	double temp;
+	vec_length = A.num_cols;
+	for(int col = 0; col < A.num_cols; col++) {
+		for(row = 0; row < A.num_rows; row++) {
+			// Dot Product Row_i(A) with Col_j(B)
+			temp = 0.0;
+			for(offset = 0; offset < vec_length; offset++) {
+				temp += lb_mat_row_element(A,row,offset) * lb_mat_col_element(B,col,offset);
+			}
+			lb_mat_element(result,row,col) = temp;
 		}
 	}
-	result.orientation = LB_ROW_ORIENTED;
 }
 
-void lbmv_row(Matrix A, Vector b, Vector result) {
-	int j;
-	for(j = 0; j < A.num_rows; j++) {
-		Vector A_j = lb_get_row(A,j);
-		double* result_element = lb_vec_element_ptr(result,j);
-		lbdp(A_j, b, result_element);
-	}
-}
 
-void lbmv_col(Matrix A, Vector b, Vector result) {
-	int i;
-	for(i = 0; i < A.num_cols; i++) {
-		Vector A_i = lb_get_col(A,i);
-		double* result_element = lb_vec_element_ptr(result,i);
-		lbdp(b, A_i, result_element);
+// Assume A.num_cols == B.num_cols
+// Assume A.num_rows == B.num_rows
+void lbma(Matrix A, Matrix B, Matrix result) {
+	int col,row;
+	for(int col = 0; col < A.num_cols; col++) {
+		for(row = 0; row < A.num_rows; row++) {
+			lb_mat_element(result,row,col) = lb_mat_element(A,row,col) + lb_mat_element(B,row,col);
+		}
 	}
 }
