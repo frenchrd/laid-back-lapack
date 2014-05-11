@@ -4,9 +4,8 @@
 #include "lb_vector.h"
 #include "mpi.h"
 #include "populate_vectors.h"
+#include "lb_walltimer.h"
 
-#define Initialize_Walltimer() double time0 = MPI_Wtime(); double time1;
-#define Walltimer_Label(rank_id,msg) time1 = MPI_Wtime(); printf("## [Rank %d] " msg " (%fs)\n",rank_id,time1 - time0); time0 = time1;
 
 double f1_function(double x) {
 	return sin(x);
