@@ -1,3 +1,7 @@
+demo_matrix.exe: demo_matrix.c lb_matrix.o
+	cc demo_matrix.c -o demo_matrix.exe lb_matrix.o
+	cp demo_matrix.exe $(MEMBERWORK)/stf007
+
 trig.exe: main.c lb_vector.o populate_vectors.o
 	cc -g -fopenmp main.c -o trig.exe lb_vector.o populate_vectors.o
 	cp trig.exe $(MEMBERWORK)/stf007

@@ -4,9 +4,8 @@
 #include "lb_vector.h"
 #include "mpi.h"
 #include "populate_vectors.h"
+#include "lb_walltimer.h"
 
-#define Initialize_Walltimer() double time0 = MPI_Wtime(); double time1;
-#define Walltimer_Label(rank_id,msg) time1 = MPI_Wtime(); printf("## [Rank %d] " msg " (%fs)\n",rank_id,time1 - time0); time0 = time1;
 
 double f1_function(double x) {
 	return sin(x);
@@ -64,7 +63,7 @@ int main(int argc, char** argv) {
 	MPI_Init(&argc, &argv);
 
 	ProblemDescription p = specify_p_from_environment(argc,argv);
-	Initialize_Walltimer();
+	Initialize_Walltimer(p.my_rank_id);
 
 	// Allocate host arrays
 	double local_dot_product;
@@ -73,17 +72,17 @@ int main(int argc, char** argv) {
 	Vector f1 = lb_allocate_vector(p.local_length);
 	Vector f2 = lb_allocate_vector(p.local_length);
 	Vector f1_dot_f2 = lb_allocate_vector(p.local_length);
-	Walltimer_Label(p.my_rank_id, "Allocating giant arrays on host");
+	Walltimer_Label("Allocating giant arrays on host");
 
 	// Allocate and initialize vectors on device
 	populate_vectors(f1.data,f2.data,p.local_length,h,p.lower_bound);
-	Walltimer_Label(p.my_rank_id, "Populating vectors via device");
+	Walltimer_Label("Populating vectors via device");
 
 	// f1 dot f2
 	double dot_product_son;
 	lbdp(f1,f2,&local_dot_product);
 	MPI_Reduce(&local_dot_product,&dot_product_son,1,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
-	Walltimer_Label(p.my_rank_id, "f1 dot f2");
+	Walltimer_Label("f1 dot f2");
 	
 	// norm of f1
 	double norm_f1;
@@ -91,14 +90,14 @@ int main(int argc, char** argv) {
 	lbdp(f1,f1,&local_norm);
 	MPI_Reduce(&local_norm,&norm_f1,1,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
 	if (p.my_rank_id == 0) norm_f1 = sqrt(norm_f1);
-	Walltimer_Label(p.my_rank_id, "Norm of f1");
+	Walltimer_Label("Norm of f1");
 	
 	// norm of f2
 	double norm_f2;
 	lbdp(f2,f2,&local_norm);
 	MPI_Reduce(&local_norm,&norm_f2,1,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
 	if (p.my_rank_id == 0) norm_f2 = sqrt(norm_f2);
-	Walltimer_Label(p.my_rank_id, "Norm of f2");
+	Walltimer_Label("Norm of f2");
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	if (p.my_rank_id == 0) {

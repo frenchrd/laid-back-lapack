@@ -1,33 +1,48 @@
 #include "lb_matrix.h"
-// Assume Matrix A is LB_ROW_ORIENTED
-// Assume Matrix B is LB_COL_ORIENTED
+#include <stdlib.h>
+// Assume A.num_cols == B.num_rows
+// 	  C.num_rows == A.num_rows
+// 	  C.num_cols == B.num_cols
 void lbmm(Matrix A, Matrix B, Matrix result) {
-	int i,j;
-	for(int j = 0; j < A.num_cols; j++) {
-		Vector A_j = lb_get_row(A,j);
-		for(i = 0; i < A.num_rows; i++) {
-			Vector B_i = lb_get_col(B,i);
-			double* result_element = lb_mat_element_ptr(result,i,j);
-			lbdp(A_j, B_i, result_element);
+	int col,row,offset,vec_length;
+	double vec_sum;
+	vec_length = A.num_cols;
+	for(col = 0; col < B.num_cols; col++) {
+		for(row = 0; row < A.num_rows; row++) {
+			// Dot Product Row(A) with Col(B)
+			vec_sum = 0.0;
+			for(offset = 0; offset < vec_length; offset++) {
+				double a = lb_mat_row_element(A,row,offset);
+				double b = lb_mat_col_element(B,col,offset);
+				double product = a * b;
+				vec_sum += product;
+			}
+			lb_mat_element(result,row,col) = vec_sum;
 		}
 	}
-	result.orientation = LB_ROW_ORIENTED;
 }
 
-void lbmv_row(Matrix A, Vector b, Vector result) {
-	int j;
-	for(j = 0; j < A.num_rows; j++) {
-		Vector A_j = lb_get_row(A,j);
-		double* result_element = lb_vec_element_ptr(result,j);
-		lbdp(A_j, b, result_element);
+
+// Assume A.num_cols == B.num_cols
+// Assume A.num_rows == B.num_rows
+void lbma(Matrix A, Matrix B, Matrix result) {
+	int col,row;
+	for(col = 0; col < A.num_cols; col++) {
+		for(row = 0; row < A.num_rows; row++) {
+			lb_mat_element(result,row,col) = lb_mat_element(A,row,col) + lb_mat_element(B,row,col);
+		}
 	}
 }
 
-void lbmv_col(Matrix A, Vector b, Vector result) {
-	int i;
-	for(i = 0; i < A.num_cols; i++) {
-		Vector A_i = lb_get_col(A,i);
-		double* result_element = lb_vec_element_ptr(result,i);
-		lbdp(b, A_i, result_element);
-	}
+Matrix lb_create_matrix(double* data, unsigned int num_rows, unsigned int num_cols) {
+	Matrix m;
+	m.data = data;
+	m.num_rows = num_rows;
+	m.num_cols = num_cols;
+	return m;
+}
+
+Matrix lb_allocate_matrix(unsigned int num_rows, unsigned int num_cols) {
+	double* ptr = (double*)malloc(sizeof(double) * num_rows * num_cols);
+	return lb_create_matrix(ptr,num_rows,num_cols);
 }
